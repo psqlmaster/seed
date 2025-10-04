@@ -3,6 +3,7 @@
 #include <string.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <getopt.h>
 
 /* Constants */
 #define WORDLIST_SIZE 2048
@@ -202,29 +203,39 @@ int main(int argc, char *argv[]) {
     /* Parse command-line arguments */
     int success_count = 1; /* Default: 1 iteration */
     int word_count = 12;   /* Default: 12 words */
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-c") == 0 && i + 1 < argc) {
-            success_count = atoi(argv[i + 1]);
-            if (success_count <= 0) {
-                fprintf(stderr, "Error: -c must be a positive number\n");
+    int opt;
+
+    while ((opt = getopt(argc, argv, "c:w:h")) != -1) {
+        switch (opt) {
+            case 'c':
+                success_count = atoi(optarg);
+                if (success_count <= 0) {
+                    fprintf(stderr, "Error: -c must be a positive number\n");
+                    return 1;
+                }
+                break;
+            case 'w':
+                word_count = atoi(optarg);
+                if (word_count != 12 && word_count != 24) {
+                    fprintf(stderr, "Error: -w must be 12 or 24\n");
+                    return 1;
+                }
+                break;
+            case 'h':
+                print_help(argv[0]);
+                return 0;
+            default:
+                fprintf(stderr, "Unknown argument: -%c\n", optopt);
+                print_help(argv[0]);
                 return 1;
-            }
-            i++;
-        } else if (strcmp(argv[i], "-w") == 0 && i + 1 < argc) {
-            word_count = atoi(argv[i + 1]);
-            if (word_count != 12 && word_count != 24) {
-                fprintf(stderr, "Error: -w must be 12 or 24\n");
-                return 1;
-            }
-            i++;
-        } else if (strcmp(argv[i], "-h") == 0) {
-            print_help(argv[0]);
-            return 0;
-        } else {
-            fprintf(stderr, "Unknown argument: %s\n", argv[i]);
-            print_help(argv[0]);
-            return 1;
         }
+    }
+
+    /* Check for extra arguments */
+    if (optind < argc) {
+        fprintf(stderr, "Unknown argument: %s\n", argv[optind]);
+        print_help(argv[0]);
+        return 1;
     }
 
     /* Load wordlist */
