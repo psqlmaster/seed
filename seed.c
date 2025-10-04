@@ -4,12 +4,12 @@
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 
-// Constants
+/* Constants */
 #define WORDLIST_SIZE 2048
 #define MAX_WORD_LEN 20
 #define MAX_LINE_LEN 50
 
-// Load BIP39 wordlist from file
+/* Load BIP39 wordlist from file */
 char **load_bip39_wordlist(const char *filename) {
     FILE *file = fopen(filename, "r");
     if (!file) {
@@ -58,7 +58,7 @@ char **load_bip39_wordlist(const char *filename) {
     return wordlist;
 }
 
-// Free wordlist memory
+/* Free wordlist memory */
 void free_bip39_wordlist(char **wordlist) {
     for (int i = 0; i < WORDLIST_SIZE; i++) {
         free(wordlist[i]);
@@ -66,14 +66,14 @@ void free_bip39_wordlist(char **wordlist) {
     free(wordlist);
 }
 
-// Validate BIP39 mnemonic (silently skip invalid checksums)
+/* Validate BIP39 mnemonic (silently skip invalid checksums) */
 int validate_mnemonic(const char *mnemonic, char **wordlist, int word_count) {
     char *mnemonic_copy = strdup(mnemonic);
     if (!mnemonic_copy) {
         return 0;
     }
 
-    // Split mnemonic into words
+    /* Split mnemonic into words */
     char *words[24];
     int actual_count = 0;
     char *token = strtok(mnemonic_copy, " ");
@@ -86,7 +86,7 @@ int validate_mnemonic(const char *mnemonic, char **wordlist, int word_count) {
         return 0;
     }
 
-    // Get word indices
+    /* Get word indices */
     unsigned int indices[24];
     for (int i = 0; i < word_count; i++) {
         int found = 0;
@@ -103,7 +103,7 @@ int validate_mnemonic(const char *mnemonic, char **wordlist, int word_count) {
         }
     }
 
-    // Reconstruct bits
+    /* Reconstruct bits */
     int entropy_bits = (word_count == 12) ? 128 : 256;
     int checksum_bits = entropy_bits / 32;
     int total_bits = entropy_bits + checksum_bits;
@@ -120,7 +120,7 @@ int validate_mnemonic(const char *mnemonic, char **wordlist, int word_count) {
         }
     }
 
-    // Verify checksum
+    /* Verify checksum */
     unsigned char entropy[32];
     memcpy(entropy, bits, entropy_bits / 8);
     unsigned char hash[32];
@@ -136,7 +136,7 @@ int validate_mnemonic(const char *mnemonic, char **wordlist, int word_count) {
     return 1;
 }
 
-// Generate BIP39 mnemonic (12 or 24 words)
+/* Generate BIP39 mnemonic (12 or 24 words) */
 void generate_mnemonic(char *mnemonic, size_t len, char **wordlist, int word_count) {
     int entropy_bits = (word_count == 12) ? 128 : 256;
     int checksum_bits = entropy_bits / 32;
@@ -154,7 +154,7 @@ void generate_mnemonic(char *mnemonic, size_t len, char **wordlist, int word_cou
     SHA256(entropy, entropy_bits / 8, hash);
     printf("SHA256 hash computed\n");
 
-    // Form bits (entropy + checksum)
+    /* Form bits (entropy + checksum) */
     unsigned char bits[33] = {0};
     memcpy(bits, entropy, entropy_bits / 8);
     bits[byte_count - 1] = hash[0] >> (8 - checksum_bits);
@@ -189,7 +189,7 @@ void generate_mnemonic(char *mnemonic, size_t len, char **wordlist, int word_cou
     printf("Seed phrase generated\n");
 }
 
-// Display help message
+/* Display help message */
 void print_help(const char *prog_name) {
     printf("Usage: %s [-c <count>] [-w <12|24>] [-h]\n", prog_name);
     printf("Options:\n");
@@ -199,9 +199,9 @@ void print_help(const char *prog_name) {
 }
 
 int main(int argc, char *argv[]) {
-    // Parse command-line arguments
-    int success_count = 1; // Default: 1 iteration
-    int word_count = 12;   // Default: 12 words
+    /* Parse command-line arguments */
+    int success_count = 1; /* Default: 1 iteration */
+    int word_count = 12;   /* Default: 12 words */
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-c") == 0 && i + 1 < argc) {
             success_count = atoi(argv[i + 1]);
@@ -227,11 +227,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Load wordlist
+    /* Load wordlist */
     char **wordlist = load_bip39_wordlist("BIP39.txt");
 
-    // Generate specified number of valid seed phrases
-    char mnemonic[600]; // Increased buffer for 24 words
+    /* Generate specified number of valid seed phrases */
+    char mnemonic[600]; /* Increased buffer for 24 words */
     int successful = 0;
     int attempts = 0;
     while (successful < success_count && attempts < 100 * success_count) {
@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Clean up
+    /* Clean up */
     free_bip39_wordlist(wordlist);
     printf("Memory cleaned up\n");
     return 0;
