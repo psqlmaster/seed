@@ -50,9 +50,9 @@ Run the program with the following command-line options:
 - `-h`: Displays the help message with usage information.
 
 ### Examples
-1. **Generate 2 valid 24-word seed phrases**:
+1. **Generate 20000 valid 24-word seed phrases**:
    ```bash
-   ./seed -c 2 -w 24
+   ./seed -c 20000 -w 24
    ```
    Example output:
    ```
